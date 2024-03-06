@@ -9,7 +9,7 @@ function StockDetails() {
   const navigate = useNavigate(); // Hook to navigate to different routes
 
   useEffect(() => {
-    axios.get(`http://127.0.0.1:5000/stock/current?symbol=${symbol}`)
+    axios.get(`https://mcsbt-integration-larbi.ue.r.appspot.com/stock/current?symbol=${symbol}`)
       .then(response => {
         setStockData(response.data);
       })

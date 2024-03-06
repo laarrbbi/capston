@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import PortfolioList from './components/PortfolioList';
 import StockDetails from './components/StockDetails';
 import HistoricalData from './components/HistoricalData';
@@ -18,5 +18,6 @@ function App() {
     </Router>
   );
 }
+
 
 export default App;

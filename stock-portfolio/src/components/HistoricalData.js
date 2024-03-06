@@ -8,7 +8,7 @@ function HistoricalData() {
   const { symbol } = useParams();
 
   useEffect(() => {
-    axios.get(`http://127.0.0.1:5000/stock/history?symbol=${symbol}`)
+    axios.get(`https://mcsbt-integration-larbi.ue.r.appspot.com/stock/history?symbol=${symbol}`)
       .then(response => {
         setHistoricalData(response.data);
       })
