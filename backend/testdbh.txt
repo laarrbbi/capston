@@ -1,0 +1,105 @@
+
+import requests
+from flask import Flask, jsonify, request, make_response, session
+from flask_cors import CORS
+from flask_session import Session
+from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import create_engine, select, Column, Integer, String, ForeignKey
+from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.sql import text
+from sqlalchemy.pool import NullPool
+from flask_sqlalchemy import SQLAlchemy
+import flask_sqlalchemy
+
+
+
+'''''''''
+db = SQLAlchemy()
+
+class User(db.Model):
+    __tablename__ = 'users'
+    
+    user_id = db.Column(db.Integer, primary_key=True)
+    user_name = db.Column(db.String(255), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    stocks = db.relationship('Stock', backref='owner', lazy='dynamic')
+    
+    def __repr__(self):
+        return f'<User {self.user_name}>'
+
+class Stock(db.Model):
+    __tablename__ = 'stocks'
+    
+    stock_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+    ticker = db.Column(db.String(10), nullable=False)
+    quantity = db.Column(db.Float, nullable=False)
+    
+    def __repr__(self):
+        return f'<Stock {self.ticker}>'
+
+un = 'ADMIN'
+pw = 'Mcsbt-integration2024'
+dsn = '(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.eu-frankfurt-1.oraclecloud.com))(connect_data=(service_name=gf74a8e510de816_c4zvs2bficy4lcyp_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))'
+
+pool = oracledb.create_pool(user=un, password=pw,dsn=dsn)
+
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'oracle+oracledb://ADMIN:Mcsbt-integration2024@adb.eu-frankfurt-1.oraclecloud.com:1522/?service_name=gf74a8e510de816_c4zvs2bficy4lcyp_high.adb.oraclecloud.com'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+   'creator': pool.acquire,
+   'poolclass': NullPool,
+   'connect_args': {'ssl_server_cert_dn_match': 'false'}
+} 
+app.config['SQLALCHEMY_ECHO'] = True
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
+
+
+'''''''''
+
+
+
+# SQLite configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////Users/m/Desktop/MCSBT/Capston/final_project/backend/mydatabase.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+
+## we added this user to that iw works
+#from werkzeug.security import generate_password_hash
+from main import db, Users  # Ensure this matches the name of your model class
+
+# Hash the password
+hashed_password = generate_password_hash('admin', method='pbkdf2:sha256')
+
+# Check if the user already exists
+if not Users.query.filter_by(user_name='admin').first():
+    # Create and add the new user
+    new_user = Users(user_name='admin', password=hashed_password, email='admin@example.com')
+    db.session.add(new_user)
+    
+    # Try to commit the changes to the database
+    try:
+        db.session.commit()
+        print("Admin user created successfully.")
+    except Exception as e:
+        print(f"Error creating user: {e}")
+        db.session.rollback()
+else:
+    print("Admin user already exists.")
+
+
+
+
+
+
+
+
+
+curl -X POST -H "Content-Type: application/json" -d '{"username": "admin", "password": "admin"}' https://mcsbt-integration-larbi.u
+e.r.appspot.com/login
