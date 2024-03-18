@@ -13,29 +13,42 @@ export const addStockToPortfolio = (stock) => {
   });
 };
 
+
+
+
+
+
+
 export const fetchCurrentStockData = async (symbol) => {
   try {
     const response = await axios.get(`${BASE_URL}/stock/current`, {
       params: { symbol }
     });
-    return response.data['Global Quote']; // Assuming 'Global Quote' is the desired data
+    console.log(response.data);
+    // Return the data as is, assuming the structure matches the screenshot provided
+    return response.data;
   } catch (error) {
     console.error('Error fetching current stock data:', error);
     throw error;
   }
 };
 
+
 export const fetchHistoricalStockData = async (symbol) => {
   try {
     const response = await axios.get(`${BASE_URL}/stock/history`, {
       params: { symbol }
     });
-    return response.data['Monthly Time Series']; // Assuming 'Monthly Time Series' is the desired data
+    console.log(response.data); // Log the full response data
+    // Return the data directly as it's already an object
+    return response.data; 
   } catch (error) {
     console.error('Error fetching historical stock data:', error);
     throw error;
   }
 };
+
+
 
 export const deleteStockFromPortfolio = (stockId) => axios.delete(`${BASE_URL}/portfolio/remove/${stockId}`, { withCredentials: true });
 

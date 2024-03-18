@@ -99,34 +99,127 @@ function PortfolioApp() {
     console.log('Deleting stock with ID:', stockId);
     try {
       await deleteStockFromPortfolio(stockId);
-      setPortfolio(portfolio.filter((stock) => stock.stock_id !== stockId));
+      // Filter out the deleted stock and update the portfolio state
+      const updatedPortfolio = portfolio.filter((stock) => stock.stock_id !== stockId);
+      setPortfolio(updatedPortfolio);
+      
+      // Recalculate total portfolio value and update state
+      const newTotalValue = updatedPortfolio.reduce((acc, stock) => acc + (stock.quantity * stock.currentPrice), 0);
+      setTotalValue(newTotalValue);
+  
+      // ...
     } catch (error) {
       console.error('Error deleting stock:', error);
     }
   };
 
   const handleUpdateStock = async () => {
-    console.log('Updating stock:', selectedStock);
-    if (!selectedStock || !selectedStock.stock_id || !selectedStock.quantity) {
-      console.error('Selected stock, stock ID, or quantity is undefined.');
-      // Optionally, set an error message in the state and return to inform the user
-      return;
+    if (!selectedStock || !selectedStock.stock_id || selectedStock.quantity === undefined) {
+        console.error('Selected stock, stock ID, or quantity is undefined.');
+        return;
     }
-  
+
     try {
-      const updatedStockData = await updateStockInPortfolio(selectedStock.stock_id, selectedStock.quantity);
-      // Update the portfolio state with the updated stock information
-      setPortfolio(portfolio.map((stock) => 
-        stock.stock_id === selectedStock.stock_id ? { ...stock, quantity: updatedStockData.quantity } : stock
-      ));
-      setSelectedStock(null); // Optionally reset selected stock to clear the selection
-      alert(updatedStockData.message); // Show success message or handle this in a more user-friendly way
+        const updatedStockData = await updateStockInPortfolio(selectedStock.stock_id, selectedStock.quantity);
+        console.log("Updated stock data received from API:", updatedStockData);
+        // Update the portfolio state with the updated stock information, ensuring to include all necessary details
+        const updatedPortfolio = portfolio.map(stock => 
+            stock.stock_id === selectedStock.stock_id ? { ...stock, ...updatedStockData } : stock
+        );
+        setPortfolio(updatedPortfolio);
+
+        // Recalculate the total portfolio value
+        const newTotalValue = updatedPortfolio.reduce((acc, stock) => acc + (stock.quantity * stock.currentPrice), 0);
+        setTotalValue(newTotalValue);
+
+        setSelectedStock(null); // Clear the selected stock after updating
+        alert('Stock updated successfully'); // Consider replacing with more sophisticated notification
     } catch (error) {
-      console.error('Error updating stock:', error);
-      // Optionally, set an error message in the state
+        console.error('Error updating stock:', error);
+        // Handle error state appropriately
     }
-  };
-  
+};
+
+
+
+const renderHistoricalDataTable = () => {
+  if (historicalStockData && typeof historicalStockData === 'object' && Object.keys(historicalStockData).length > 0) {
+    // Convert the object into an array of entries, each entry is [date, data]
+    const tableRows = Object.entries(historicalStockData).map(([date, data]) => (
+      <tr key={date}>
+        <td>{date}</td>
+        <td>{data['1. open']}</td>
+        <td>{data['2. high']}</td>
+        <td>{data['3. low']}</td>
+        <td>{data['4. close']}</td>
+        <td>{data['5. volume']}</td>
+      </tr>
+    ));
+
+    return (
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Open</th>
+            <th>High</th>
+            <th>Low</th>
+            <th>Close</th>
+            <th>Volume</th>
+          </tr>
+        </thead>
+        <tbody>{tableRows}</tbody>
+      </table>
+    );
+  } else {
+    return <p>No historical data to display.</p>;
+  }
+};
+
+
+// Add this function within your PortfolioApp component
+const handleFetchCurrentStockData = async (symbol) => {
+  try {
+    const data = await fetchCurrentStockData(symbol);
+    console.log('Fetched current stock data:', data); // Log the fetched data
+    setCurrentStockData(data); // Set the state
+  } catch (error) {
+    console.error('Failed to fetch and set current stock data:', error);
+  }
+};
+
+
+// Function to render the current stock data in a table format
+const renderCurrentStockData = () => {
+  if (currentStockData && Object.keys(currentStockData).length > 0) {
+    // Create table rows from currentStockData object
+    const tableRows = Object.entries(currentStockData).map(([key, value]) => (
+      <tr key={key}>
+        <td>{key}</td>
+        <td>{value}</td>
+      </tr>
+    ));
+
+    return (
+      <div>
+        <h3>Current Stock Information</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>{tableRows}</tbody>
+        </table>
+      </div>
+    );
+  } else {
+    return <p>No current stock data to display.</p>;
+  }
+};
+
+
   
   
 
@@ -173,27 +266,17 @@ function PortfolioApp() {
 
               {/* Section to display current stock information */}
               {currentStockData && (
-                <div>
-                  <h3>Current Stock Information</h3>
-                  <p>Price: {currentStockData['05. price']}</p>
-                  {/* Additional fields can be displayed as needed */}
-                </div>
+                <>
+                <Button variant="primary" onClick={() => handleFetchCurrentStockData(selectedStock.ticker)}>Load Current Data</Button>
+                {renderCurrentStockData()}
+              </>
               )}
 
               {/* Button to load and display historical stock data */}
               {selectedStock && (
                 <>
                   <Button onClick={() => handleFetchHistoricalStockData(selectedStock.ticker)}>Load Historical Data</Button>
-                  {historicalStockData && (
-                    <div>
-                      <h3>Historical Stock Data</h3>
-                      <ul>
-                        {Object.entries(historicalStockData).map(([date, data]) => (
-                          <li key={date}>Date: {date}, Open: {data['1. open']}, High: {data['2. high']}, Low: {data['3. low']}, Close: {data['4. close']}, </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {renderHistoricalDataTable()}
                 </>
               )}
             </>
