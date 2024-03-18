@@ -157,10 +157,10 @@ def get_portfolio():
         return make_response("User not found", 404)
     
     portfolio_data = [
-        {
-            'ticker': stock.ticker,
+        {   'ticker': stock.ticker,
             'quantity': stock.quantity,
-            'currentPrice': get_real_time_price(stock.ticker)  # Fetch the real-time price
+            'currentPrice': get_real_time_price(stock.ticker),  # Fetch the real-time price
+            'stock_id': stock.stock_id
         } for stock in user.stocks
     ]
     

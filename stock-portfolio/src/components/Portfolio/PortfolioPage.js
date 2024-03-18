@@ -47,13 +47,16 @@ function PortfolioApp() {
   
   const handleFetchHistoricalStockData = async (symbol) => {
     try {
+      
       const data = await fetchHistoricalStockData(symbol);
+      console.log('Fetched historical stock data:', data); // Log the fetched data
       setHistoricalStockData(data);
     } catch (error) {
       console.error('Failed to fetch and set historical stock data:', error);
       // Optionally set an error state here and display an error message to the user
     }
   };
+  
   
 
   const handleSearch = async (e) => {
@@ -66,25 +69,34 @@ function PortfolioApp() {
     }
   };
 
-  const handleSelectStock = (symbol) => {
-    setSearchQuery(symbol);
-    setNewStock({ ...newStock, ticker: symbol });
-    setSearchResults([]);
-  
-    // Now, also fetch the current stock data
-    fetchCurrentStockData(symbol)
-      .then(data => {
-        setCurrentStockData(data); // Assuming this state has been added to your component
-      })
-      .catch(error => {
-        console.error('Error fetching current stock data:', error);
-        // Handle error, maybe update the UI to show an error message
-      });
-  
-  };
+  //const handleSelectStock = (stock) => {
+    //setSelectedStock(stock); // Ensure this is the stock object with all necessary data
+    //fetchCurrentStockData(stock.ticker)
+     // .then(data => {
+     //   setCurrentStockData(data); // Update state with the current stock data
+     // })
+     // .catch(error => {
+     //   console.error('Error fetching current stock data:', error);
+    //  });
+ // };
+
+ const handleSelectStock = (stock) => {
+  console.log('Selected stock:', stock); // Log the stock object to debug
+  setSelectedStock(stock); // Ensure this is the stock object with all necessary data
+  fetchCurrentStockData(stock.ticker)
+    .then(data => {
+      setCurrentStockData(data); // Update state with the current stock data
+    })
+    .catch(error => {
+      console.error('Error fetching current stock data:', error);
+    });
+};
 
   
+
+
   const handleDeleteStock = async (stockId) => {
+    console.log('Deleting stock with ID:', stockId);
     try {
       await deleteStockFromPortfolio(stockId);
       setPortfolio(portfolio.filter((stock) => stock.stock_id !== stockId));
@@ -94,22 +106,28 @@ function PortfolioApp() {
   };
 
   const handleUpdateStock = async () => {
-    if (!selectedStock || !selectedStock.quantity) {
-      // Maybe set an error message in state and return
+    console.log('Updating stock:', selectedStock);
+    if (!selectedStock || !selectedStock.stock_id || !selectedStock.quantity) {
+      console.error('Selected stock, stock ID, or quantity is undefined.');
+      // Optionally, set an error message in the state and return to inform the user
       return;
     }
   
     try {
       const updatedStockData = await updateStockInPortfolio(selectedStock.stock_id, selectedStock.quantity);
-      // Update state with new portfolio data
-      setPortfolio(portfolio.map((stock) => stock.stock_id === selectedStock.stock_id ? { ...stock, quantity: selectedStock.quantity } : stock));
-      setSelectedStock(null); // Reset selected stock
-      alert(updatedStockData.message); // Show success message
+      // Update the portfolio state with the updated stock information
+      setPortfolio(portfolio.map((stock) => 
+        stock.stock_id === selectedStock.stock_id ? { ...stock, quantity: updatedStockData.quantity } : stock
+      ));
+      setSelectedStock(null); // Optionally reset selected stock to clear the selection
+      alert(updatedStockData.message); // Show success message or handle this in a more user-friendly way
     } catch (error) {
       console.error('Error updating stock:', error);
-      // Maybe set an error message in state
+      // Optionally, set an error message in the state
     }
   };
+  
+  
   
 
   return (
@@ -124,7 +142,7 @@ function PortfolioApp() {
         <Col md={4}>
           {portfolio.map((stock) => (
             <Card key={stock.stock_id} className="mb-2">
-              <Card.Body onClick={() => setSelectedStock(stock)}>
+              <Card.Body onClick={() => handleSelectStock(stock)}>
                 <Card.Title>{stock.ticker}</Card.Title>
                 Quantity: {stock.quantity}
               </Card.Body>
@@ -171,7 +189,7 @@ function PortfolioApp() {
                       <h3>Historical Stock Data</h3>
                       <ul>
                         {Object.entries(historicalStockData).map(([date, data]) => (
-                          <li key={date}>Date: {date}, Open: {data['1. open']}, High: {data['2. high']}, Low: {data['3. low']}, Close: {data['4. close']}</li>
+                          <li key={date}>Date: {date}, Open: {data['1. open']}, High: {data['2. high']}, Low: {data['3. low']}, Close: {data['4. close']}, </li>
                         ))}
                       </ul>
                     </div>
