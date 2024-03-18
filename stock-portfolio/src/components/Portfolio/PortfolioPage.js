@@ -288,20 +288,24 @@ const handleFetchHistoricalStockDataForChart = async (symbol) => {
                 </>
               )}
 
-              {/* Conditionally rendered latest year's chart */}
-              {showYearChart && (
-                <HistoricalStockChart historicalData={historicalStockData} />
-              )}
 
               {/* Button to load and display historical stock data */}
-              {selectedStock && (
-                <>
-                  <Button onClick={() => handleFetchHistoricalStockData(selectedStock.ticker)}>Load Historical Data</Button>
-                  {renderHistoricalDataTable()}
-                </>
-              )}
-            </>
-          )}
+            {selectedStock && (
+              <>
+                <Button onClick={() => {
+                  handleFetchHistoricalStockData(selectedStock.ticker);
+                  setShowYearChart(true);
+                }}>Load Historical Data</Button>
+                {showYearChart && (
+                  <>
+                    <HistoricalStockChart historicalData={historicalStockData} />
+                    {renderHistoricalDataTable()}
+                  </>
+                )}
+              </>
+            )}
+          </>
+        )}
         </Col>
       </Row>
       <Modal show={showModal} onHide={() => setShowModal(false)}>
