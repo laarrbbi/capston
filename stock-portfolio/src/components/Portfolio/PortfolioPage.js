@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Form, Card, Modal } from 'react-bootstrap';
-import { fetchPortfolio, addStockToPortfolio, updateStockInPortfolio, deleteStockFromPortfolio,searchStocks, fetchCurrentStockData, fetchHistoricalStockData} from './api'; // Assuming these functions are correctly implemented in api.js
+import { fetchPortfolio, addStockToPortfolio, updateStockInPortfolio, deleteStockFromPortfolio,searchStocks, fetchCurrentStockData, fetchHistoricalStockData, fetchChartHistoricalStockData} from './api'; // Assuming these functions are correctly implemented in api.js
+import HistoricalStockChart from './HistoricalStockChart'; 
 
 function PortfolioApp() {
   const [portfolio, setPortfolio] = useState([]);
@@ -12,6 +13,8 @@ function PortfolioApp() {
   const [searchResults, setSearchResults] = useState([]);
   const [currentStockData, setCurrentStockData] = useState({});
   const [historicalStockData, setHistoricalStockData] = useState({});
+  const [showChart, setShowChart] = useState(false);
+  const [showYearChart, setShowYearChart] = useState(false);
 
 
 
@@ -220,8 +223,21 @@ const renderCurrentStockData = () => {
 };
 
 
-  
-  
+
+const handleFetchHistoricalStockDataForChart = async (symbol) => {
+  try {
+    const data = await fetchChartHistoricalStockData(symbol);
+    // Since the data is sorted from oldest to newest, reverse it for the chart
+    const sortedData = {};
+    Object.keys(data).sort((a, b) => new Date(b) - new Date(a)).forEach(key => {
+      sortedData[key] = data[key];
+    });
+    setHistoricalStockData(sortedData);
+  } catch (error) {
+    console.error('Failed to fetch and set historical stock data for chart:', error);
+  }
+};
+
 
   return (
     <Container>
@@ -267,9 +283,14 @@ const renderCurrentStockData = () => {
               {/* Section to display current stock information */}
               {currentStockData && (
                 <>
-                <Button variant="primary" onClick={() => handleFetchCurrentStockData(selectedStock.ticker)}>Load Current Data</Button>
-                {renderCurrentStockData()}
-              </>
+                  <Button variant="primary" onClick={() => handleFetchCurrentStockData(selectedStock.ticker)}>Load Current Data</Button>
+                  {renderCurrentStockData()}
+                </>
+              )}
+
+              {/* Conditionally rendered latest year's chart */}
+              {showYearChart && (
+                <HistoricalStockChart historicalData={historicalStockData} />
               )}
 
               {/* Button to load and display historical stock data */}

@@ -15,6 +15,19 @@ export const addStockToPortfolio = (stock) => {
 
 
 
+export const fetchChartHistoricalStockData = async (symbol) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/stock/history`, {
+      params: { symbol }
+    });
+    console.log(response.data); // Log the full response data
+    // Return the data directly as it's already an object
+    return response.data; 
+  } catch (error) {
+    console.error('Error fetching historical stock data:', error);
+    throw error;
+  }
+};
 
 
 
