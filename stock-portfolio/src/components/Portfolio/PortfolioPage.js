@@ -118,30 +118,31 @@ function PortfolioApp() {
 
   const handleUpdateStock = async () => {
     if (!selectedStock || !selectedStock.stock_id || selectedStock.quantity === undefined) {
-        console.error('Selected stock, stock ID, or quantity is undefined.');
-        return;
+      console.error('Selected stock, stock ID, or quantity is undefined.');
+      return;
     }
-
+  
     try {
-        const updatedStockData = await updateStockInPortfolio(selectedStock.stock_id, selectedStock.quantity);
-        console.log("Updated stock data received from API:", updatedStockData);
-        // Update the portfolio state with the updated stock information, ensuring to include all necessary details
-        const updatedPortfolio = portfolio.map(stock => 
-            stock.stock_id === selectedStock.stock_id ? { ...stock, ...updatedStockData } : stock
-        );
-        setPortfolio(updatedPortfolio);
-
-        // Recalculate the total portfolio value
-        const newTotalValue = updatedPortfolio.reduce((acc, stock) => acc + (stock.quantity * stock.currentPrice), 0);
-        setTotalValue(newTotalValue);
-
-        setSelectedStock(null); // Clear the selected stock after updating
-        alert('Stock updated successfully'); // Consider replacing with more sophisticated notification
+      const updatedStockData = await updateStockInPortfolio(selectedStock.stock_id, selectedStock.quantity);
+      console.log("Updated stock data received from API:", updatedStockData);
+      
+      // Find and update the stock in the portfolio array
+      const updatedPortfolio = portfolio.map(stock =>
+        stock.stock_id === selectedStock.stock_id ? { ...stock, quantity: selectedStock.quantity } : stock
+      );
+      setPortfolio(updatedPortfolio);
+  
+      // Recalculate the total portfolio value
+      const newTotalValue = updatedPortfolio.reduce((acc, stock) => acc + (stock.quantity * stock.currentPrice), 0);
+      setTotalValue(newTotalValue);
+  
+      setSelectedStock(null); // Clear the selected stock after updating
+      alert('Stock updated successfully');
     } catch (error) {
-        console.error('Error updating stock:', error);
-        // Handle error state appropriately
+      console.error('Error updating stock:', error);
     }
-};
+  };
+  
 
 
 
