@@ -103,3 +103,6 @@ else:
 
 curl -X POST -H "Content-Type: application/json" -d '{"username": "admin", "password": "admin"}' https://mcsbt-integration-larbi.u
 e.r.appspot.com/login
+
+
+curl -X POST -H "Content-Type: application/json" -d '{"username": "admin", "password": "admin"}' http://127.0.0.1:5000/login

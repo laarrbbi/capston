@@ -19,22 +19,30 @@ const Login = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(credentials),
+        credentials: 'include', // This will send cookies along with the request.
       });
-
+  
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
       
-      // Assuming the login is successful and you want to redirect to '/portfolio'
-      navigate('/portfolio');
+      if (data.message === "Login successful") {
+        // Use setTimeout to redirect after a short delay
+        setTimeout(() => {
+          navigate('/portfolio');
+        }, 100); // Delay of 100 milliseconds
+      } else {
+        // Handle the case where login is not successful
+        alert(`Login failed: ${data.message || "Unknown error"}`);
+      }
     } catch (error) {
       console.error('There was an error!', error);
       alert(`Login failed: ${error.message || "Unknown error"}`);
     }
   };
-
+  
   return (
     <div className="login-container">
       <form onSubmit={handleSubmit}>
