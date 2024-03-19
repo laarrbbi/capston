@@ -82,3 +82,7 @@ export const searchStocks = (query) => {
   };
   
 
+export const logout = () => {
+  return axios.get(`${BASE_URL}/logout`, { withCredentials: true });
+  };
+  

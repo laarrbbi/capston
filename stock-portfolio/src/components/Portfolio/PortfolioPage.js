@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Form, Card, Modal } from 'react-bootstrap';
-import { fetchPortfolio, addStockToPortfolio, updateStockInPortfolio, deleteStockFromPortfolio,searchStocks, fetchCurrentStockData, fetchHistoricalStockData, fetchChartHistoricalStockData} from './api'; // Assuming these functions are correctly implemented in api.js
+import { fetchPortfolio, addStockToPortfolio, updateStockInPortfolio, deleteStockFromPortfolio,searchStocks, fetchCurrentStockData, fetchHistoricalStockData, fetchChartHistoricalStockData, logout} from './api'; // Assuming these functions are correctly implemented in api.js
 import HistoricalStockChart from './HistoricalStockChart'; 
 
 function PortfolioApp() {
@@ -39,7 +39,9 @@ function PortfolioApp() {
       // Use the ticker from newStock to add the stock
       const response = await addStockToPortfolio(newStock);
       // Update the portfolio state with the new stock
+      let updatedPortfolio = [...portfolio, response.data];
       setPortfolio([...portfolio, response.data]);
+      await fetchAndSetPortfolio();
       // Reset states
       setNewStock({ ticker: '', quantity: 0 });
       setShowModal(false);
@@ -72,16 +74,6 @@ function PortfolioApp() {
     }
   };
 
-  //const handleSelectStock = (stock) => {
-    //setSelectedStock(stock); // Ensure this is the stock object with all necessary data
-    //fetchCurrentStockData(stock.ticker)
-     // .then(data => {
-     //   setCurrentStockData(data); // Update state with the current stock data
-     // })
-     // .catch(error => {
-     //   console.error('Error fetching current stock data:', error);
-    //  });
- // };
 
  const handleSelectStock = (stock) => {
   console.log('Selected stock:', stock); // Log the stock object to debug
@@ -239,15 +231,36 @@ const handleFetchHistoricalStockDataForChart = async (symbol) => {
   }
 };
 
+const handleLogout = async () => {
+  try {
+    await logout();
+    // Handle successful logout here, e.g., redirect to login page or show a message
+    alert('Logged out successfully');
+    // If using react-router, you can redirect to the login page like this:
+    // history.push('/login');
+  } catch (error) {
+    console.error('Error logging out:', error);
+    // Handle logout error here, e.g., show an error message
+  }
+};
+
 
   return (
+    
     <Container>
       <Row>
-        <Col>
+        <Col className="d-flex justify-content-between align-items-center">
           <h1 className="text-center my-4">My Stock Portfolio</h1>
-          <div className="text-center mb-4">Total value: €{totalValue.toFixed(2)}</div>
+          <Button onClick={handleLogout} variant="secondary">Logout</Button>
         </Col>
       </Row>
+      <Row>
+      <Col className="text-center mb-4">
+        <div>Total value: €{totalValue.toFixed(2)}</div>
+      </Col>
+      </Row>
+
+
       <Row>
         <Col md={4}>
           {portfolio.map((stock) => (
