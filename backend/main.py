@@ -8,12 +8,12 @@ import oracledb
 from sqlalchemy.pool import NullPool
 from flask.sessions import SecureCookieSessionInterface
 
-#import oracledb
+
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
-app.config['SESSION_COOKIE_SAMESITE'] = 'None'  # or 'None'
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'  
 app.config['SESSION_COOKIE_SECURE'] = True
 app.secret_key = '1234'
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -21,13 +21,33 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 
 
-# SQLite configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////Users/m/Desktop/MCSBT/Capston/final_project/backend/mydatabase.db'
+# SQLite configuration - you have a configuration to create a local database and you will have to use you path in your computer or fetch the data from the backend that is deployed online.
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////https://mcsbt-integration-larbi.ue.r.appspot.com/mydatabase.db'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////Users/m/Desktop/MCSBT/Capston/final_project/backend/mydatabase.db'
+#app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+#app.config['SECRET_KEY'] = '1234'  # Required for session management only when local database 
+
+
+
+un = 'ADMIN'
+pw = 'Mcsbt-integration2024'
+dsn = '(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1521)(host=adb.eu-frankfurt-1.oraclecloud.com))(connect_data=(service_name=gf74a8e510de816_c4zvs2bficy4lcyp_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))'
+
+pool = oracledb.create_pool(user=un, password=pw,dsn=dsn)
+
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'oracle+oracledb://{un}:{pw}@{dsn}'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = '1234'  # Required for session management only when local database 
+
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+   'creator': pool.acquire,
+   'poolclass': NullPool,
+   'connect_args': {'ssl_server_cert_dn_match': 'false'}
+} 
+app.config['SQLALCHEMY_ECHO'] = True
 
 db = SQLAlchemy(app)
-
 
 
 class Users(db.Model):
@@ -53,7 +73,8 @@ class Stock(db.Model):
     def __repr__(self):
         return f'<Stock {self.ticker}>'
 
-
+with app.app_context():
+    db.create_all()
 
 # Alpha Vantage API key
 alpha_vantage_api_key = 'RH90QYBSBNKSR7XG'
@@ -102,8 +123,8 @@ def login():
     
     user = Users.query.filter_by(user_name=user_name).first()
 
-    if user and check_password_hash(user.password, password):  # Change password_hash to password
-        session['user_id'] = user.user_id  # Change id to user_id
+    if user and check_password_hash(user.password, password):  
+        session['user_id'] = user.user_id  
         return jsonify({"message": "Login successful", "user": user_name})
     else:
         return make_response("Invalid credentials", 401)
@@ -148,11 +169,11 @@ def search_stocks():
 
 @app.route('/portfolio', methods=['GET'])
 def get_portfolio():
-    
+    #user_id =  1
     user_id = session['user_id']
     if not user_id:
         return make_response("Unauthorized", 401)
-    #user_id =  1
+    
     
     user = Users.query.get(user_id)
     if not user:
@@ -253,12 +274,12 @@ def get_historical_stock_data():
 
 @app.route('/portfolio/update/<int:stock_id>', methods=['PUT'])
 def update_stock(stock_id):
+    #user_id = 1
     user_id = session['user_id']
     if 'user_id' not in session:
         return jsonify({"error_code": 401, "message": "Unauthorized"}), 401
     
-    #user_id = 1
-    #user_id = session['user_id']
+    
     stock_data = request.json
     stock = Stock.query.filter_by(user_id=user_id, stock_id=stock_id).first()
 
@@ -293,8 +314,8 @@ def remove_stock_from_portfolio(stock_id):
 
 
 
-# This should be at the bottom of your file
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()  # This will create the database file and tables
+    #with app.app_context():
+        #db.create_all()  # This will create the database file and tables
     app.run(debug=True)

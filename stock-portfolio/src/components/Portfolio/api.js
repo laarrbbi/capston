@@ -1,7 +1,7 @@
 import axios from 'axios';
 axios.defaults.withCredentials = true;
 
-const BASE_URL = 'http://127.0.0.1:5000'; // Update with the actual URL of your backend
+const BASE_URL = 'https://mcsbt-integration-larbi.ue.r.appspot.com'; // Update with the actual URL of your backend
 
 export const fetchPortfolio = () => axios.get(`${BASE_URL}/portfolio`, { withCredentials: true });
 export const addStockToPortfolio = (stock) => {
