@@ -93,6 +93,7 @@ def cookies(response):
     return response
 
 
+
 @app.route('/login', methods=['POST'])
 def login():
     credentials = request.json
@@ -148,10 +149,11 @@ def search_stocks():
 @app.route('/portfolio', methods=['GET'])
 def get_portfolio():
     
-    #if not user_id:
-       # return make_response("Unauthorized", 401)
-    user_id =  1
-    user_id = session.get('user_id')
+    user_id = session['user_id']
+    if not user_id:
+        return make_response("Unauthorized", 401)
+    #user_id =  1
+    
     user = Users.query.get(user_id)
     if not user:
         return make_response("User not found", 404)
@@ -177,10 +179,10 @@ def get_portfolio():
 
 @app.route('/portfolio/add', methods=['POST'])
 def add_stock_to_portfolio():
-    user_id = 1
-    user_id = session.get('user_id')
-    #if not user_id:
-       # return jsonify({"error_code": 401, "message": "Unauthorized"}), 401
+    #user_id = 1
+    user_id = session['user_id']
+    if not user_id:
+        return jsonify({"error_code": 401, "message": "Unauthorized"}), 401
 
     stock_data = request.json
     print(stock_data)
@@ -251,11 +253,12 @@ def get_historical_stock_data():
 
 @app.route('/portfolio/update/<int:stock_id>', methods=['PUT'])
 def update_stock(stock_id):
-    #if 'user_id' not in session:
-       # return jsonify({"error_code": 401, "message": "Unauthorized"}), 401
+    user_id = session['user_id']
+    if 'user_id' not in session:
+        return jsonify({"error_code": 401, "message": "Unauthorized"}), 401
     
-    user_id = 1
-    user_id = session.get('user_id')
+    #user_id = 1
+    #user_id = session['user_id']
     stock_data = request.json
     stock = Stock.query.filter_by(user_id=user_id, stock_id=stock_id).first()
 
@@ -274,10 +277,10 @@ def update_stock(stock_id):
 
 @app.route('/portfolio/remove/<int:stock_id>', methods=['DELETE'])
 def remove_stock_from_portfolio(stock_id):
-    user_id = 1
-    user_id = session.get('user_id')
-    #if not user_id:
-     #   return make_response("Unauthorized", 401)
+    #user_id = 1
+    user_id = session['user_id']
+    if not user_id:
+        return make_response("Unauthorized", 401)
 
     stock = Stock.query.filter_by(stock_id=stock_id, user_id=user_id).first()
     if not stock:
